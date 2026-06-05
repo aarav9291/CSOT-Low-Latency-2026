@@ -1,4 +1,7 @@
 #include "engine.hpp"
+#include "histogram.hpp"
+#include <chrono>
+#include <iostream>
 #include <cstdint>
 #include <fstream>
 #include <sstream>
