@@ -52,9 +52,9 @@ vector<csot::Tick> Engine::load_ticks(const string& path) {
 }
 void Engine::run(const vector<csot::Tick>& ticks,csot::Strategy& strategy){
     csot::LatencyHistogram hist;
-
+    uint64_t order_count = 0;
     for (const auto& tick : ticks) {
-
+        
         auto t1 = steady_clock::now();
 
         auto orders = strategy.on_tick(tick);
@@ -67,6 +67,7 @@ void Engine::run(const vector<csot::Tick>& ticks,csot::Strategy& strategy){
         hist.record(static_cast<uint64_t>(ns));
 
         for (const auto& order : orders) {
+            ++order_count;
             strategy.on_fill(
                 order,
                 order.price,
@@ -77,6 +78,8 @@ void Engine::run(const vector<csot::Tick>& ticks,csot::Strategy& strategy){
 
     cout << ticks.size()
          << " ticks processed\n";
-
+    cout << "orders = "
+     << order_count
+     << '\n';
     hist.print(cout);
 }
