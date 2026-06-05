@@ -23,5 +23,6 @@ int main() {
     cout << "ticks[0].symbol = "
          << ticks[0].symbol
          << '\n';
+    cout << ticks.size() << '\n';
     return 0;
 }
