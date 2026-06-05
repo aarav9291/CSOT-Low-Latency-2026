@@ -81,28 +81,7 @@ include_directories(${CMAKE_SOURCE_DIR}/include)
 #add_library(spec_strategy SHARED strategies/spec_strategy.cpp)
 #set_target_properties(spec_strategy PROPERTIES PREFIX "")   # produce "spec_strategy.so" not "libspec_strategy.so"
 
-#ADDED BY ME FROM HERE
-# -------- Engine library --------
-add_library(engine STATIC src/engine.cpp)
-target_link_libraries(engine PUBLIC ${CMAKE_DL_LIBS})
 
-# -------- Strategy object for local testing --------
-add_library(spec_strategy_obj OBJECT strategies/spec_strategy.cpp)
-
-# -------- Main runner --------
-add_executable(quant_runner src/main.cpp)
-
-target_link_libraries(
-    quant_runner
-    PRIVATE
-    engine
-    spec_strategy_obj
-)
-
-# -------- Shared library for leaderboard --------
-add_library(spec_strategy SHARED strategies/spec_strategy.cpp)
-set_target_properties(spec_strategy PROPERTIES PREFIX "")
-#ADDED BY ME TILL HERE
 
 # -------- Benchmarks (Google Benchmark) --------
 # Uncomment when you've written bench/bench.cpp.
