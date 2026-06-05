@@ -3,9 +3,12 @@
 
 using namespace std;
 
-int main() {
+int main(int argc, char* argv[]){
+    if (argc < 2) {
+        return 1;
+    }
     Engine engine;
-    auto ticks = engine.load_ticks("data/synthetic_small.csv");
+    auto ticks = engine.load_ticks(argv[1]);
     cout << ticks.size() << '\n';
     cout << "First tick:\n";
     cout << ticks.front().timestamp_ns << " "
