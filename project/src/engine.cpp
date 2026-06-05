@@ -8,6 +8,7 @@
 #include <stdexcept>
 
 using namespace std;
+using namespace chrono;
 
 vector<csot::Tick> Engine::load_ticks(const string& path) {
     vector<csot::Tick> ticks;
