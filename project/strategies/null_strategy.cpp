@@ -1,4 +1,5 @@
 #include "strategy.hpp"
+#include <vector>
 
 using namespace std;
 
