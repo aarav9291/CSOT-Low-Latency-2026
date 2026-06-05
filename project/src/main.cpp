@@ -5,7 +5,7 @@ using namespace std;
 
 int main() {
     Engine engine;
-    auto ticks = engine.load_ticks("data/tiny.csv");
+    auto ticks = engine.load_ticks("data/synthetic_small.csv");
     cout << "First tick:\n";
     cout << ticks.front().timestamp_ns << " "
          << ticks.front().symbol << " "
