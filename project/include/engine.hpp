@@ -11,7 +11,7 @@ using namespace std;
 class Engine {
 public:
     vector<csot::Tick> load_ticks(const string& path);
-
+    void run(const vector<csot::Tick>& ticks, csot::Strategy& strategy);
 private:
     deque<string> symbol_storage_;
     unordered_map<string, string_view> interned_;
