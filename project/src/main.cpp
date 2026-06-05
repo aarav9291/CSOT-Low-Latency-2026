@@ -6,6 +6,7 @@ using namespace std;
 int main() {
     Engine engine;
     auto ticks = engine.load_ticks("data/synthetic_small.csv");
+    cout << ticks.size() << '\n';
     cout << "First tick:\n";
     cout << ticks.front().timestamp_ns << " "
          << ticks.front().symbol << " "
@@ -23,6 +24,5 @@ int main() {
     cout << "ticks[0].symbol = "
          << ticks[0].symbol
          << '\n';
-    cout << ticks.size() << '\n';
     return 0;
 }
