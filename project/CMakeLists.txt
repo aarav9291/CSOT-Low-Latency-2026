@@ -78,8 +78,8 @@ target_link_libraries(quant_runner PRIVATE engine)
 # -------- A sample strategy as a shared library --------
 # The engine will dlopen this and call create_strategy().
 # Uncomment when you've written strategies/spec_strategy.cpp.
-# add_library(spec_strategy SHARED strategies/spec_strategy.cpp)
-# set_target_properties(spec_strategy PROPERTIES PREFIX "")   # produce "spec_strategy.so" not "libspec_strategy.so"
+add_library(spec_strategy SHARED strategies/spec_strategy.cpp)
+set_target_properties(spec_strategy PROPERTIES PREFIX "")   # produce "spec_strategy.so" not "libspec_strategy.so"
 
 # -------- Benchmarks (Google Benchmark) --------
 # Uncomment when you've written bench/bench.cpp.
