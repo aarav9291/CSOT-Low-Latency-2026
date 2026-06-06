@@ -73,7 +73,15 @@ target_link_libraries(engine PUBLIC ${CMAKE_DL_LIBS})   # dlopen / dlsym
 # CLI: ./quant_runner <strategy.so> <ticks.csv>
 # Uncomment when you've written src/main.cpp.
 add_executable(quant_runner src/main.cpp)
-target_link_libraries(quant_runner PRIVATE engine)
+#target_link_libraries(quant_runner PRIVATE engine)
+#ADDED BY ME
+target_link_libraries(
+    quant_runner
+    PRIVATE
+    engine
+    spec_strategy
+)
+#ADDED TILL HERE
 
 # -------- A sample strategy as a shared library --------
 # The engine will dlopen this and call create_strategy().
