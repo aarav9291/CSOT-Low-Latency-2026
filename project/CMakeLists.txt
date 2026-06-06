@@ -66,14 +66,14 @@ include_directories(${CMAKE_SOURCE_DIR}/include)
 
 # -------- Engine library --------
 # Uncomment when you've written src/engine.cpp.
-# add_library(engine STATIC src/engine.cpp)
-# target_link_libraries(engine PUBLIC ${CMAKE_DL_LIBS})   # dlopen / dlsym
+add_library(engine STATIC src/engine.cpp)
+target_link_libraries(engine PUBLIC ${CMAKE_DL_LIBS})   # dlopen / dlsym
 
 # -------- Main runner --------
 # CLI: ./quant_runner <strategy.so> <ticks.csv>
 # Uncomment when you've written src/main.cpp.
-# add_executable(quant_runner src/main.cpp)
-# target_link_libraries(quant_runner PRIVATE engine)
+add_executable(quant_runner src/main.cpp)
+target_link_libraries(quant_runner PRIVATE engine)
 
 # -------- A sample strategy as a shared library --------
 # The engine will dlopen this and call create_strategy().
