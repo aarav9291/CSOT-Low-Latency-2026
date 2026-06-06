@@ -36,12 +36,12 @@ vector<csot::Tick> Engine::load_ticks(const string& path){
             symbol_view = it->second;
         }
         csot::Tick tick;
-        tick.timestamp_ns = stoull(ts_s);
+        tick.timestamp_ns = stoull(ts);
         tick.symbol = symbol_view;
-        tick.bid_px = stod(bid_s);
-        tick.ask_px = stod(ask_s);
-        tick.bid_qty = static_cast<uint32_t>(stoul(bid_qty_s));
-        tick.ask_qty = static_cast<uint32_t>(stoul(ask_qty_s));
+        tick.bid_px = stod(bid);
+        tick.ask_px = stod(ask);
+        tick.bid_qty = static_cast<uint32_t>(stoul(bid_qty));
+        tick.ask_qty = static_cast<uint32_t>(stoul(ask_qty));
         ticks.push_back(tick);
     }
     return ticks;
