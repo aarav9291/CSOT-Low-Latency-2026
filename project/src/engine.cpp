@@ -1,10 +1,14 @@
 #include "engine.hpp"
+#include "histogram.hpp"
 
 #include <cstdint>
 #include <fstream>
 #include <sstream>
+#include <chrono>
+#include <iostream>
 
 using namespace std;
+using namespace chrono;
 
 vector<csot::Tick> Engine::load_ticks(const string& path){
     vector<csot::Tick> ticks;
@@ -46,3 +50,21 @@ vector<csot::Tick> Engine::load_ticks(const string& path){
     }
     return ticks;
 }
+
+void Engine::tick_loop(const vector<csot::Tick>& ticks, csot::Strategy& strategy){
+    csot::LatencyHistogram hist;
+    for (const auto& tick: ticks){
+        auto t1 = steady_clock::now();
+        auto orders = strategy.on_tick(tick);
+        auto t2 = steady_clock::now();
+        auto ns = duration_cast<nanoseconds>(t2-t1).count();
+        hist.record(static_cast<uint64_t>(ns));
+        for (const auto& order: orders){
+            strategy.on_fill(order, order.price, order.qty);
+        }
+    }
+    cout << ticks.size() << " ticks processed\n";
+    hist.print(cout);
+}
+
+
