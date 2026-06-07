@@ -5,7 +5,6 @@
 #include <string_view>
 #include <vector>
 #include <algorithm>
-#include <iostream>
 
 using namespace std;
 
@@ -23,7 +22,6 @@ private:
     SymbolState states[64];
     string_view symbols[64];
     uint32_t symbol_count = 0;
-    uint64_t orders_generated = 0;
     SymbolState& state_for(string_view sym){
         for (uint32_t i = 0; i < symbol_count; ++i){
             if (symbols[i] == sym){
@@ -60,21 +58,17 @@ public:
         const double abs_z = std::abs(z);
         if (st.position == 0) {
             if (z >= 2.0) {
-                ++orders_generated;
                 return {csot::Order{csot::Order::Side::SELL, t.symbol, t.bid_px, 1}};
             }
             if (z <= -2.0) {
-                ++orders_generated;
                 return {csot::Order{csot::Order::Side::BUY, t.symbol, t.ask_px, 1}};
             }
             return {};
         }
         if (st.position > 0 && abs_z <= 0.5) {
-            ++orders_generated;
             return {csot::Order{csot::Order::Side::SELL, t.symbol, t.bid_px,static_cast<uint32_t>(st.position)}};
         }
         if (st.position < 0 && abs_z <= 0.5) {
-            ++orders_generated;
             return {csot::Order{csot::Order::Side::BUY, t.symbol, t.ask_px,static_cast<uint32_t>(-st.position)}};
         }
         return {};
@@ -87,13 +81,6 @@ public:
         else{
             st.position -= static_cast<int32_t>(fill_qty);
         }
-    }
-    ~SpecStrategy() override
-    {
-        std::cout
-            << "orders generated = "
-            << orders_generated
-            << '\n';
     }
 };
 extern "C" csot::Strategy* create_strategy() { return new SpecStrategy(); }
