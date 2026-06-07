@@ -4,11 +4,14 @@
 #include <cstdint>
 #include <string_view>
 #include <vector>
+#include <algorithm>
 
 using namespace std;
 
 struct SymbolState {
-    double mids[64]{};      
+    double mids[64]{};
+    double sum = 0.0;
+    double sum_sq = 0.0;
     uint32_t count = 0;       
     uint32_t head = 0;        
     int32_t position = 0;     
@@ -32,25 +35,21 @@ public:
     std::vector<csot::Order> on_tick(const csot::Tick& t) {
         auto& st = state_for(t.symbol);
         const double mid = (t.bid_px + t.ask_px) * 0.5;
+        const double old = st.mids[st.head];
+        st.sum -= old;
+        st.sum_sq -= old * old;
         st.mids[st.head] = mid;
-        st.head = (st.head + 1) & 63;       
+        st.sum += mid;
+        st.sum_sq += mid * mid;
+        st.head = (st.head + 1) & 63;      
         if (st.count < 64) {
             ++st.count;
         }
         if (st.count < 64) {
             return {};
         }
-        double sum = 0.0;
-        for (double x : st.mids) {
-            sum += x;
-        }
-        const double mean = sum / 64.0;
-        double sq = 0.0;
-        for (double x : st.mids) {
-            const double d = x - mean;
-            sq += d * d;
-        }    
-        const double variance = sq / 64.0;
+        const double mean = st.sum / 64.0;
+        const double variance = max(0.0,(st.sum_sq / 64.0)- mean * mean);
         const double stddev = std::sqrt(variance);
         if (stddev < 1e-9) {
             return {};
