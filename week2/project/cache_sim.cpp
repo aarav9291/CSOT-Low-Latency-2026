@@ -30,14 +30,44 @@ private:
     bool l2_dirty[512][8];
     uint64_t l2_tag[512][8];
     uint8_t l2_lru[512][8];
+void lruupdatel1(int set,int way){
+    int j = 0;
+    while (l1_lru[set][j] != way) j++;
+    for (int i=j;i>0;i--) l1_lru[set][i] = l1_lru[set][i-1];
+    l1_lru[set][0] = way;
+}
+void lruupdatel2(int set,int way){
+    int j = 0;
+    while (l2_lru[set][j] != way) j++;
+    for (int i=j;i>0;i--) l2_lru[set][i] = l2_lru[set][i-1];
+    l2_lru[set][0] = way;
+}
+int searchl1(uint64_t tag,int set){
+    for (int i=0;i<8;i++){
+        if (l1_valid[set][i] && l1_tag[set][i] == tag) return i;
+    }
+    return -1;
+}
+int searchl2(uint64_t tag,int set){
+    for (int i=0;i<8;i++){
+        if (l2_valid[set][i] && l2_tag[set][i] == tag) return i;
+    }
+    return -1;
+}
+int victiml2(int set){
+    for (int i=0;i<8;i++){
+        if (!l2_valid[set][i]) return i;
+    }
+    return l2_lru[set][7];
+}
+int victiml1(int set){
+    for (int i = 0; i < 8; i++){
+        if (!l1_valid[set][i]) return i;
+    }
+    return l1_lru[set][7];
+}
 public:
     void on_init() override {
-        // Allocate ALL state you will ever need here (tag arrays, LRU bits,
-        // dirty bits, …). After on_init() returns, run() must not touch the
-        // heap. See 04-zero-allocation.md.
-        //
-        // TODO: size and zero your L1 (64 sets x 8 ways) and L2 (512 sets x
-        //       8 ways) structures. Geometry constants are in CACHE_SPEC.md §3.
         for (int s = 0; s < 64; s++) {
             for (int w = 0; w < 8; w++) {
                 l1_valid[s][w] = false;
@@ -55,30 +85,50 @@ public:
             }
         }
     }
-
     csot::CacheStats run(const csot::MemAccess* acc, std::size_t n) override {
         csot::CacheStats s{};
-
         for (std::size_t i = 0; i < n; ++i) {
             const csot::MemAccess& a = acc[i];
-
             if (a.is_write) {
-                ++s.writes;
-            } else {
-                ++s.reads;
+                s.writes++;
+            } 
+            else {
+                s.reads++;
             }
-
-            // TODO: replace this placeholder with the real CACHE_SPEC.md §5
-            //       per-access algorithm:
-            //         1. probe L1 (set = (addr >> 6) & 63, tag = addr >> 12)
-            //         2. on L1 miss, probe L2 (set = (addr >> 6) & 511)
-            //         3. write-allocate fills, true LRU per set
-            //         4. write-back dirty victims; count dirty L2->memory
-            //            evictions in dirty_writebacks
-            //
-            // The placeholder below is WRONG on purpose (it never hits).
-            ++s.l1_misses;
-            ++s.l2_misses;
+            uint64_t b = a.address >> 6;
+            int s1 = b&63;
+            uint64_t t1 = b >> 6;
+            int way = searchl1(t1,s1);
+            //l1 hit
+            if (way != -1){
+                s.l1_hits++;
+                lruupdatel1(s1,way);
+                if (a.is_write) l1_dirty[s1][way] = true;
+                continue;
+            }
+            //l1 miss
+            s.l1_misses++;
+            int s2 = b&511;
+            uint64_t t2 = b >> 9;
+            int way2 = searchl2(t2,s2);
+            //l2 hit
+            if (way2 != -1){
+                s.l2_hits++;
+                lruupdatel2(s2,way2);
+            }
+            //l2 miss
+            else {
+                s.l2_misses++;
+                int victim = victiml2(s2);
+                if (l2_valid[s2][victim] && l2_dirty[s2][victim]) s.dirty_writebacks++;
+                l2_tag[s2][victim] = t2;
+                l2_valid[s2][victim] = true;
+                l2_dirty[s2][victim] = false;
+                lruupdatel2(s2, victim);
+            }
+            int victim = victiml1(s1);
+             
+            
             (void)a.address;
         }
 
