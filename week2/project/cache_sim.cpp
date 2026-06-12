@@ -17,10 +17,19 @@
 // ============================================================================
 
 #include "cache_sim.hpp"
+#include <cstdint>
 
 namespace {
-
 class StubCacheSim final : public csot::CacheSim {
+private:
+    bool l1_valid[64][8];
+    bool l1_dirty[64][8];
+    uint64_t l1_tag[64][8];
+    uint8_t l1_lru[64][8];
+    bool l2_valid[512][8];
+    bool l2_dirty[512][8];
+    uint64_t l2_tag[512][8];
+    uint8_t l2_lru[512][8];
 public:
     void on_init() override {
         // Allocate ALL state you will ever need here (tag arrays, LRU bits,
@@ -29,6 +38,22 @@ public:
         //
         // TODO: size and zero your L1 (64 sets x 8 ways) and L2 (512 sets x
         //       8 ways) structures. Geometry constants are in CACHE_SPEC.md §3.
+        for (int s = 0; s < 64; s++) {
+            for (int w = 0; w < 8; w++) {
+                l1_valid[s][w] = false;
+                l1_dirty[s][w] = false;
+                l1_tag[s][w] = 0;
+                l1_lru[s][w] = w;
+            }
+        }
+        for (int s = 0; s < 512; s++) {
+            for (int w = 0; w < 8; w++) {
+                l2_valid[s][w] = false;
+                l2_dirty[s][w] = false;
+                l2_tag[s][w] = 0;
+                l2_lru[s][w] = w;
+            }
+        }
     }
 
     csot::CacheStats run(const csot::MemAccess* acc, std::size_t n) override {
