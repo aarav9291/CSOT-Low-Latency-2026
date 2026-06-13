@@ -18,7 +18,14 @@
 
 #include "cache_sim.hpp"
 #include <cstdint>
-
+namespace geo {
+inline constexpr std::uint64_t LINE_BITS = 6;   
+inline constexpr std::uint64_t L1_SETS = 64;
+inline constexpr std::uint64_t L2_SETS = 512;
+inline constexpr std::uint64_t WAYS = 8;
+inline constexpr std::uint64_t L1_MASK = L1_SETS - 1;   
+inline constexpr std::uint64_t L2_MASK = L2_SETS - 1;   
+}
 namespace {
 class StubCacheSim final : public csot::CacheSim {
 private:
@@ -95,9 +102,9 @@ public:
             else {
                 s.reads++;
             }
-            uint64_t b = a.address >> 6;
-            int s1 = b&63;
-            uint64_t t1 = b >> 6;
+            uint64_t b = a.address >> LINE_BITS;
+            int s1 = b & L1_MASK;
+            uint64_t t1 = b >> LINE_BITS;
             int way = searchl1(t1,s1);
             //l1 hit
             if (way != -1){
@@ -108,7 +115,7 @@ public:
             }
             //l1 miss
             s.l1_misses++;
-            int s2 = b&511;
+            int s2 = b & L2_MASK;
             uint64_t t2 = b >> 9;
             int way2 = searchl2(t2,s2);
             //l2 hit
@@ -129,7 +136,7 @@ public:
             int victim = victiml1(s1);
             if (l1_valid[s1][victim] && l1_dirty[s1][victim]){
                 uint64_t b_v = (l1_tag[s1][victim] << 6) | s1;
-                int s2v = b_v & 511;
+                int s2v = b_v & L2_MASK;
                 uint64_t t2v = b_v >> 9;
                 int way = searchl2(t2v,s2v);
                 if (way!=-1) l2_dirty[s2v][way] = true;
