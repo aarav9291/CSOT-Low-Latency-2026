@@ -26,6 +26,7 @@ inline constexpr std::uint64_t WAYS = 8;
 inline constexpr std::uint64_t L1_MASK = L1_SETS - 1;   
 inline constexpr std::uint64_t L2_MASK = L2_SETS - 1;   
 }
+using namespace geo;
 namespace {
 class StubCacheSim final : public csot::CacheSim {
 private:
