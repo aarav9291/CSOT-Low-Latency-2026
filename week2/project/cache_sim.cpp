@@ -127,7 +127,26 @@ public:
                 lruupdatel2(s2, victim);
             }
             int victim = victiml1(s1);
-             
+            if (l1_valid[s1][victim] && l1_dirty[s1][victim]){
+                b_v = (l1_tag[s1][victim] << 6) | s1;
+                s2v = b_v & 511;
+                t2v = b_v >> 9;
+                int way = searchl2(t2v,s2v);
+                if (way!=-1) l2_dirty[s2v][t2v] = true;
+                else{
+                    int victim2 = victiml2(s2v);
+                    if (l2_valid[s2v][victim2] && l2_dirty[s2v][victim2]) s.dirty_writebacks++;
+                    l2_valid[s2v][victim2] = true;
+                    l2_dirty[s2v][victim2] = true;
+                    l2_tag[s2v][victim2] = t2v;
+                    lruupdatel2(s2v,victim2);
+                }
+            }
+            l1_tag[s1][victim] = t1;
+            l1_valid[s1][victim] = true;
+            if (a.is_write) l1_dirty[s1][victim] = true;
+            else l1_dirty[s1][victim] = false;
+            lruupdatel1(s1,victim);
             
             (void)a.address;
         }
