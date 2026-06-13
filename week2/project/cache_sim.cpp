@@ -128,11 +128,11 @@ public:
             }
             int victim = victiml1(s1);
             if (l1_valid[s1][victim] && l1_dirty[s1][victim]){
-                b_v = (l1_tag[s1][victim] << 6) | s1;
-                s2v = b_v & 511;
-                t2v = b_v >> 9;
+                uint64_t b_v = (l1_tag[s1][victim] << 6) | s1;
+                int s2v = b_v & 511;
+                uint64_t t2v = b_v >> 9;
                 int way = searchl2(t2v,s2v);
-                if (way!=-1) l2_dirty[s2v][t2v] = true;
+                if (way!=-1) l2_dirty[s2v][way] = true;
                 else{
                     int victim2 = victiml2(s2v);
                     if (l2_valid[s2v][victim2] && l2_dirty[s2v][victim2]) s.dirty_writebacks++;
