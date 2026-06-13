@@ -147,8 +147,6 @@ public:
             if (a.is_write) l1_dirty[s1][victim] = true;
             else l1_dirty[s1][victim] = false;
             lruupdatel1(s1,victim);
-            
-            (void)a.address;
         }
 
         return s;
