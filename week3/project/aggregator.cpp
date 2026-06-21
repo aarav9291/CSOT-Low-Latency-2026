@@ -33,6 +33,7 @@
 #include "aggregate.hpp"
 #include <thread>
 #include <vector>
+#include <algorithm>
 
 namespace {
 
@@ -67,23 +68,40 @@ public:
         for (std::uint32_t s = 0; s < num_symbols_; ++s) {
             out[s] = csot::SymbolAgg{0, 0, 0, 0, 0};
         }
+        std::thread workers[THREADS];
+        std::size_t chunk=(n+THREADS-1)/THREADS;
 
         // SINGLE-THREADED reference reduction (AGG_SPEC.md §5/§6). Correct but
         // slow. TODO: split [0, n) across threads, accumulate into padded
         // per-thread partials, then merge into `out`.
-        for (std::size_t i = 0; i < n; ++i) {
-            const csot::AggTick& t = ticks[i];
-            csot::SymbolAgg&     r = out[t.symbol_id];
-            if (r.count == 0) {
-                r.min_price = t.price;
-                r.max_price = t.price;
-            } else {
-                if (t.price < r.min_price) r.min_price = t.price;
-                if (t.price > r.max_price) r.max_price = t.price;
-            }
-            r.count += 1;
-            r.sum_price += t.price;
-            r.sum_qty += t.qty;
+        for(int tid=0;tid<THREADS;tid++){
+            std::size_t l=tid*chunk;
+            std::size_t r=std::min(n,l+chunk);
+            workers[tid]=std::thread([=, this](){
+                auto& table = partials_[tid].rows;
+                //clear this thread's table
+                for(std::uint32_t s=0;s<num_symbols_;s++){
+                    table[s] = csot::SymbolAgg{0,0,0,0,0};
+                }
+                for(std::size_t i=l;i<r;i++){
+                    const csot::AggTick& t = ticks[i];
+                    csot::SymbolAgg& r = table[t.symbol_id];
+                    if(r.count==0){
+                        r.min_price=t.price;
+                        r.max_price=t.price;
+                    }     
+                    else{
+                        if(t.price<r.min_price)r.min_price = t.price;
+                        if(t.price > r.max_price)r.max_price = t.price;
+                    }
+                    r.count += 1;
+                    r.sum_price += t.price;
+                    r.sum_qty += t.qty;
+                }
+            });
+        }
+        for(int tid=0;tid<THREADS;tid++){
+            workers[tid].join();
         }
     }
 };
