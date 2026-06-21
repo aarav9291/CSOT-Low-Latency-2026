@@ -99,6 +99,22 @@ public:
         for(int tid=0;tid<THREADS;tid++){
             workers[tid].join();
         }
+        for(std::uint32_t s=0;s<num_symbols_;s++){
+            for(int tid=0;tid<THREADS;tid++){
+                auto& src=partials_[tid].rows[s];
+                auto& dst=out[s];
+                if(src.count==0)continue;
+                if(dst.count==0){
+                    dst = src;
+                    continue;
+                }
+                dst.count+=src.count;
+                dst.sum_price+=src.sum_price;
+                dst.sum_qty+=src.sum_qty;
+                if(src.min_price<dst.min_price)dst.min_price=src.min_price;
+                if(src.max_price>dst.max_price)dst.max_price=src.max_price;
+            }
+        }
     }
 };
 
