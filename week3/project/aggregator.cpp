@@ -70,10 +70,6 @@ public:
         }
         std::thread workers[THREADS];
         std::size_t chunk=(n+THREADS-1)/THREADS;
-
-        // SINGLE-THREADED reference reduction (AGG_SPEC.md §5/§6). Correct but
-        // slow. TODO: split [0, n) across threads, accumulate into padded
-        // per-thread partials, then merge into `out`.
         for(int tid=0;tid<THREADS;tid++){
             std::size_t l=tid*chunk;
             std::size_t r=std::min(n,l+chunk);
