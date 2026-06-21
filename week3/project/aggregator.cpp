@@ -72,14 +72,14 @@ public:
         std::size_t chunk=(n+THREADS-1)/THREADS;
         for(int tid=0;tid<THREADS;tid++){
             std::size_t l=tid*chunk;
-            std::size_t r=std::min(n,l+chunk);
+            std::size_t R=std::min(n,l+chunk);
             workers[tid]=std::thread([=, this](){
                 auto& table=partials_[tid].rows;
                 //clear this thread's table
                 for(std::uint32_t s=0;s<num_symbols_;s++){
                     table[s]=csot::SymbolAgg{0,0,0,0,0};
                 }
-                for(std::size_t i=l;i<r;i++){
+                for(std::size_t i=l;i<R;i++){
                     const csot::AggTick& t=ticks[i];
                     csot::SymbolAgg& r=table[t.symbol_id];
                     if(r.count==0){
