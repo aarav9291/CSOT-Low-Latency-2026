@@ -31,11 +31,21 @@
 // ============================================================================
 
 #include "aggregate.hpp"
+#include <thread>
+#include <vector>
 
 namespace {
 
 class StubAggregator final : public csot::Aggregator {
     std::uint32_t num_symbols_ = 0;
+
+static constexpr int THREADS = 4;
+
+struct alignas(64) PartialTable {
+    csot::SymbolAgg rows[1024];
+};
+
+PartialTable partials_[THREADS];
 
 public:
     void on_init(std::uint32_t num_symbols) override {
@@ -43,6 +53,11 @@ public:
         // version that means your per-thread partial tables (one padded table
         // per thread) and any thread bookkeeping — never inside run().
         num_symbols_ = num_symbols;
+        for(int t=0;t<THREADS;t++){
+            for(std::uint32_t s=0;s<num_symbols_;s++){
+                partials_[t].rows[s]=csot::SymbolAgg{0,0,0,0,0};
+            }
+        }
     }
 
     void run(const csot::AggTick* ticks, std::size_t n,
